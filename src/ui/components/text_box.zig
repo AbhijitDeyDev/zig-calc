@@ -3,10 +3,10 @@ const std = @import("std");
 const LabelRect = @import("../../common/structures.zig").LabelRect;
 
 pub fn text_box(renderer: SDL.Renderer, label: []const u8, label_rect: LabelRect) !void {
-    var b = std.mem.zeroes([13]u8);
-    const string = try std.fmt.bufPrintZ(b[0..], "{s}", .{label});
+    var buffer: [128]u8 = undefined;
+    const string = try std.fmt.bufPrintZ(buffer[0..], "{s}", .{label});
 
-    const font = try SDL.ttf.openFont("src/fonts/Poppins.ttf", label_rect.label_size);
+    const font = try SDL.ttf.openFont("src/fonts/CursedTimerUlil.ttf", label_rect.label_size);
     defer font.close();
     const text_surface = try font.renderTextSolid(string, SDL.Color.white);
     defer text_surface.destroy();

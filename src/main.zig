@@ -39,12 +39,12 @@ pub fn main() !void {
     var calc_state = CalcState.init();
 
     mainLoop: while (true) {
-        var mouse_click_data: MouseClickData = undefined;
+        var mouse_click_data = MouseClickData.init();
         while (SDL.pollEvent()) |ev| {
             switch (ev) {
                 .quit => break :mainLoop,
                 .mouse_button_down => {
-                    mouse_click_data = MouseClickData.init(
+                    mouse_click_data.updateData(
                         true,
                         ev.mouse_button_down.x,
                         ev.mouse_button_down.y,
@@ -53,9 +53,10 @@ pub fn main() !void {
                 else => {},
             }
         }
-        try draw(renderer, &calc_state, mouse_click_data);
+        try draw(renderer, &calc_state, &mouse_click_data);
 
         renderer.present();
+        SDL.delay(33); // Limit FPS around 30
         try renderer.clear();
     }
 }

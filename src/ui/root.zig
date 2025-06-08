@@ -4,14 +4,12 @@ const text_box = @import("./components/text_box.zig").text_box;
 const std = @import("std");
 const CalcState = @import("../common/structures.zig").CalcState;
 const MouseClickData = @import("../common/structures.zig").MouseClickData;
+const helpers = @import("../common/helpers.zig");
 
-pub fn draw(renderer: SDL.Renderer, calc_state: *CalcState, mouse_click_data: MouseClickData) !void {
+pub fn draw(renderer: SDL.Renderer, calc_state: *CalcState, mouse_click_data: *MouseClickData) !void {
     // Set background colour
     try renderer.setColorRGB(0x22, 0x22, 0x22);
     try renderer.setDrawBlendMode(.multiply);
-
-    const font = try SDL.ttf.openFont("src/fonts/Poppins.ttf", 18);
-    defer font.close();
 
     // Rendering number buttons
     var y_index: usize = 1;
@@ -29,7 +27,6 @@ pub fn draw(renderer: SDL.Renderer, calc_state: *CalcState, mouse_click_data: Mo
                 .height = 40,
                 .label_size = 16,
             },
-            font,
         );
         y_index += (i + 2) % 2;
 
@@ -38,16 +35,17 @@ pub fn draw(renderer: SDL.Renderer, calc_state: *CalcState, mouse_click_data: Mo
             mouse_click_data.x >= x and mouse_click_data.x <= x + 140 and
             mouse_click_data.y >= y and mouse_click_data.y <= y + 40)
         {
-            calc_state.updateInput(calc_state.input * 10 + i);
+            calc_state.updateInput(helpers.appendDigit(calc_state.input, i));
         }
     }
 
     // Rendering symbols
-    const symbols = [5]u8{ '+', '-', 'x', '/', '=' };
+    const symbols = [6]u8{ '+', '-', 'x', '/', '=', '«' };
+    y_index = 1;
     for (0.., symbols) |i, symbol| {
-        var buf: [8]u8 = undefined;
-        const x = 400;
-        const y = 50 * @as(c_int, @intCast(i + 1));
+        var buf: [1]u8 = undefined;
+        const x = @as(c_int, @intCast(400 + ((i % 2) * 120)));
+        const y = 50 * @as(c_int, @intCast(y_index));
         try button(
             renderer,
             try std.fmt.bufPrint(&buf, "{c}", .{symbol}),
@@ -58,8 +56,8 @@ pub fn draw(renderer: SDL.Renderer, calc_state: *CalcState, mouse_click_data: Mo
                 .height = 40,
                 .label_size = 18,
             },
-            font,
         );
+        y_index += (i + 2) % 2;
 
         // Handle click event
 
@@ -68,23 +66,30 @@ pub fn draw(renderer: SDL.Renderer, calc_state: *CalcState, mouse_click_data: Mo
             mouse_click_data.x >= x and mouse_click_data.x <= x + 100 and
             mouse_click_data.y >= y and mouse_click_data.y <= y + 40)
         {
-            calc_state.updateOpetation(symbol);
+            if (symbol == '=') {
+                calc_state.calculate();
+            } else if (symbol == '«') {
+                calc_state.updateInput(helpers.popLastDigit(calc_state.input));
+            } else {
+                calc_state.updateOpetation(symbol);
+            }
         }
     }
 
     // Render text boxes
     // Result box
-    var result_buf: [13]u8 = undefined;
+    var buffer: [128]u8 = undefined;
     text_box(
         renderer,
-        std.fmt.bufPrint(&result_buf, "{d}", .{calc_state.input}) catch "Max reached",
+        helpers.fixDecimal(&buffer, calc_state.input, 14),
         .{
             .label_size = 40,
             .x = 50,
             .y = 350,
         },
-    ) catch {
-        try text_box(
+    ) catch |err| {
+        std.debug.print("{}", .{err});
+        return try text_box(
             renderer,
             "Max reached",
             .{
@@ -103,10 +108,30 @@ pub fn draw(renderer: SDL.Renderer, calc_state: *CalcState, mouse_click_data: Mo
             .{
                 .label_size = 30,
                 .x = 400,
-                .y = 350,
+                .y = 260,
             },
         );
     }
 
-    if (mouse_click_data.clicked) {}
+    // Render clear button
+    const x = 50;
+    const y = 400;
+    try button(
+        renderer,
+        "Clear",
+        .{
+            .x = x,
+            .y = y,
+            .width = 100,
+            .height = 40,
+            .label_size = 18,
+        },
+    );
+    // Handle clear button click
+    if (mouse_click_data.clicked and
+        mouse_click_data.x >= x and mouse_click_data.x <= x + 100 and
+        mouse_click_data.y >= y and mouse_click_data.y <= y + 40)
+    {
+        calc_state.reset();
+    }
 }

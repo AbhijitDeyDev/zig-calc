@@ -2,7 +2,7 @@ const SDL = @import("sdl2");
 const std = @import("std");
 const ButtonRect = @import("../../common/structures.zig").ButtonRect;
 
-pub fn button(renderer: SDL.Renderer, label: []const u8, rect: ButtonRect, _font: ?SDL.ttf.Font) !void {
+pub fn button(renderer: SDL.Renderer, label: []const u8, rect: ButtonRect) !void {
     try renderer.drawRect(.{
         .height = rect.height,
         .width = rect.width,
@@ -13,11 +13,8 @@ pub fn button(renderer: SDL.Renderer, label: []const u8, rect: ButtonRect, _font
     var b = std.mem.zeroes([8]u8);
     const string = try std.fmt.bufPrintZ(b[0..], "{s}", .{label});
 
-    const font: SDL.ttf.Font = _font orelse blk: {
-        const newFont = try SDL.ttf.openFont("src/fonts/Poppins.ttf", rect.label_size);
-        defer newFont.close();
-        break :blk newFont;
-    };
+    const font = try SDL.ttf.openFont("src/fonts/CursedTimerUlil.ttf", rect.label_size);
+    defer font.close();
     const text_surface = try font.renderTextSolid(string, SDL.Color.white);
     defer text_surface.destroy();
 
