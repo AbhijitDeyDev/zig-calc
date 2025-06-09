@@ -1,4 +1,5 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const sdl2 = @import("sdl");
 
 pub fn build(b: *std.Build) void {
@@ -19,6 +20,12 @@ pub fn build(b: *std.Build) void {
     sdk.link(exe, .dynamic, .SDL2);
     sdk.link(exe, .dynamic, .SDL2_ttf);
     exe.root_module.addImport("sdl2", sdk.getWrapperModule());
+
+    if (builtin.os.tag == .windows) {
+        b.installFile("SDL2/bin/SDL2.dll", "./bin/SDL2.dll");
+        b.installFile("SDL2/bin/SDL2_ttf.dll", "./bin/SDL2_ttf.dll");
+        b.installFile("src/fonts/CursedTimerUlil.ttf", "./bin/src/fonts/CursedTimerUlil.ttf");
+    }
 
     b.installArtifact(exe);
     const run_cmd = b.addRunArtifact(exe);
