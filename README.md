@@ -17,9 +17,9 @@ Currently only tested on Windows 11.
 - I don't know, just test it
 
 ## Build Instructions
-First down **Mingw** versions of both [SDL2](https://github.com/libsdl-org/SDL/releases/tag/release-2.32.8) and [SDL2_ttf](https://github.com/libsdl-org/SDL_ttf/releases/tag/release-2.24.0).
+First download **Mingw** versions of both [SDL2](https://github.com/libsdl-org/SDL/releases/tag/release-2.32.8) and [SDL2_ttf](https://github.com/libsdl-org/SDL_ttf/releases/tag/release-2.24.0).
 
-Please them inside <project_folder>/SDL2 or you can follow any doc to install SDL2 and SDL2_ttf globally.
+Copy /bin, /include and /lib folders inside <project_folder>/SDL2 folder.
 
 Run the following command to build the project:
 
