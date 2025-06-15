@@ -4,6 +4,8 @@ const draw = @import("ui/root.zig").draw;
 const CalcState = @import("./common/structures.zig").CalcState;
 const MouseClickData = @import("./common/structures.zig").MouseClickData;
 
+const THEME_COLOR = SDL.Color.rgb(153, 51, 204);
+
 pub fn main() !void {
     try SDL.init(.{
         .video = true,
@@ -53,10 +55,15 @@ pub fn main() !void {
                 else => {},
             }
         }
-        try draw(renderer, &calc_state, &mouse_click_data);
+
+        // Set background colour
+        try renderer.setColorRGB(0x22, 0x22, 0x22);
+        try renderer.clear();
+
+        try renderer.setColor(THEME_COLOR);
+        try draw(&renderer, &calc_state, &mouse_click_data);
 
         renderer.present();
-        SDL.delay(33); // Limit FPS around 30
-        try renderer.clear();
+        SDL.delay(1000 / 30); // Limit FPS around 30
     }
 }

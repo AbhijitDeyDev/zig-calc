@@ -31,7 +31,7 @@ pub fn popLastDigit(value: f128) f128 {
         return std.fmt.parseFloat(f128, formatted[0 .. formatted.len - 1]) catch value;
     } else if (std.mem.eql(u8, formatted, "0")) {
         return value;
-    } else if (formatted.len == 1) {
+    } else if (formatted.len == 1 or (formatted.len == 2 and formatted[0] == '-')) {
         return 0;
     } else {
         return std.fmt.parseFloat(f128, formatted[0 .. formatted.len - 1]) catch value;

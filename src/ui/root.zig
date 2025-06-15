@@ -6,11 +6,7 @@ const CalcState = @import("../common/structures.zig").CalcState;
 const MouseClickData = @import("../common/structures.zig").MouseClickData;
 const helpers = @import("../common/helpers.zig");
 
-pub fn draw(renderer: SDL.Renderer, calc_state: *CalcState, mouse_click_data: *MouseClickData) !void {
-    // Set background colour
-    try renderer.setColorRGB(0x22, 0x22, 0x22);
-    try renderer.setDrawBlendMode(.multiply);
-
+pub fn draw(renderer: *SDL.Renderer, calc_state: *CalcState, mouse_click_data: *MouseClickData) !void {
     // Rendering number buttons
     var y_index: usize = 1;
     for (0..10) |i| {
@@ -87,8 +83,7 @@ pub fn draw(renderer: SDL.Renderer, calc_state: *CalcState, mouse_click_data: *M
             .x = 50,
             .y = 350,
         },
-    ) catch |err| {
-        std.debug.print("{}", .{err});
+    ) catch {
         return try text_box(
             renderer,
             "Max reached",
