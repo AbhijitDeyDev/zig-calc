@@ -17,7 +17,7 @@ Currently only tested on Windows 11 and Linux (with SDL2 installed).
 - I don't know, just test it
 
 ## Build Instructions
-Make sure Zig v14 is installed,
+Make sure Zig (v0.14.0) is installed,
 #### Windows
 First download **Mingw** versions of both [SDL2](https://github.com/libsdl-org/SDL/releases/tag/release-2.32.8) and [SDL2_ttf](https://github.com/libsdl-org/SDL_ttf/releases/tag/release-2.24.0).
 
