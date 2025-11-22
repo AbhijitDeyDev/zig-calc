@@ -1,12 +1,12 @@
 .{
     .name = .zig_calc,
-    .version = "0.1.0",
+    .version = "0.2.0",
     .fingerprint = 0x945bd14cb2a077bf,
     .minimum_zig_version = "0.14.0",
     .dependencies = .{
         .sdl = .{
-            .url = "git+https://github.com/ikskuh/SDL.zig.git#424ff5f9245ef352e4c508c77ddaeed2f46bd605",
-            .hash = "SDL2-0.0.0-yMCQigakBADGJHtb2ljt13P_cCnG8Y819HRnIibNVPFk",
+            .url = "https://github.com/der-teufel-programming/SDL.zig/archive/fix-error-msg.tar.gz",
+            .hash = "SDL2-0.0.0-yMCQivWqBABTfB8opAADsLCGxxu20vijLBW2hHdpTR-L",
         },
     },
     .paths = .{

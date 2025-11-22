@@ -39,12 +39,12 @@ pub fn popLastDigit(value: f128) f128 {
 }
 
 pub fn fixDecimal(buffer: []u8, value: f128, max: usize) []const u8 {
-    return std.fmt.formatFloat(
+    return std.fmt.bufPrint(
         buffer,
-        value,
+        "{d:.[1]}",
         .{
-            .mode = .decimal,
-            .precision = getFractionCount(value, max),
+            value,
+            getFractionCount(value, max),
         },
     ) catch unreachable;
 }

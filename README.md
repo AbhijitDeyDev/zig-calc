@@ -1,6 +1,6 @@
 # Zig Calc Project
 
-Version: 0.1.0
+Version: 0.2.0
 
 ## Overview
 This project is developed using the Zig programming language and SDL2 library and it's my pet project to learn about Zig and SDL2. 
@@ -31,7 +31,7 @@ Run the following command to build and run the project:
 `zig build run`
 
 ## Dependencies
-- Zig (v0.14.0)
+- Zig (v0.14.0 or above)
 - SDL2
 - SDL2_ttf
 
