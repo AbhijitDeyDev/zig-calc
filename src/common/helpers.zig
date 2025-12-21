@@ -12,9 +12,13 @@ pub fn getFractionCount(value: f128, max: usize) usize {
     return 0; // No decimal point found
 }
 
-pub fn appendDigit(value: f128, digit: usize) f128 {
+pub fn appendDigit(value: f128, digit: usize, insert_period: bool) f128 {
     var buffer: [128]u8 = undefined;
-    const formatted = std.fmt.bufPrint(&buffer, "{d}{d}", .{ value, digit }) catch unreachable;
+    const formatted = std.fmt.bufPrint(&buffer, "{d}{s}{d}", .{
+        value,
+        if (insert_period) "." else "",
+        digit,
+    }) catch unreachable;
 
     return std.fmt.parseFloat(f128, formatted) catch value;
 }
