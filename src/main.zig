@@ -82,7 +82,12 @@ pub fn main() !void {
                             calc_state.updateInput(appendDigit(calc_state.input, 7, calc_state.is_period_input));
                         },
                         .@"8", .keypad_8 => {
-                            calc_state.updateInput(appendDigit(calc_state.input, 8, calc_state.is_period_input));
+                            // Handle asterisk for 'x' input
+                            if (ev.key_down.keycode == .@"8" and ev.key_down.modifiers.storage == 1) {
+                                calc_state.updateOpetation('x');
+                            } else {
+                                calc_state.updateInput(appendDigit(calc_state.input, 8, calc_state.is_period_input));
+                            }
                         },
                         .@"9", .keypad_9 => {
                             calc_state.updateInput(appendDigit(calc_state.input, 9, calc_state.is_period_input));
@@ -93,6 +98,8 @@ pub fn main() !void {
                             calc_state.updateOpetation('+');
                         },
                         .minus, .keypad_minus => {
+                            // Ignore '_'
+                            if (ev.key_down.keycode == .minus and ev.key_down.modifiers.storage == 1) continue;
                             calc_state.updateOpetation('-');
                         },
                         .asterisk, .keypad_multiply => {
