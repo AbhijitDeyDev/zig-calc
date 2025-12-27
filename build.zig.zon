@@ -1,8 +1,8 @@
 .{
     .name = .zig_calc,
-    .version = "0.3.0",
+    .version = "0.4.0",
     .fingerprint = 0x945bd14cb2a077bf,
-    .minimum_zig_version = "0.14.0",
+    .minimum_zig_version = "0.15.0",
     .dependencies = .{
         .sdl = .{
             .url = "https://github.com/der-teufel-programming/SDL.zig/archive/fix-error-msg.tar.gz",

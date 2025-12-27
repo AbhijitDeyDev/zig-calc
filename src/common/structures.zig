@@ -4,82 +4,83 @@ const fixDecimal = helpers.fixDecimal;
 const getFractionCount = helpers.getFractionCount;
 const FRACTION_COUNT = 14;
 
-pub const CalcState = struct {
-    prev_input: f128,
-    operation: u8,
-    input: f128,
-    is_period_input: bool,
+pub const InputValue = struct {
+    value: std.ArrayList(u8),
     has_period: bool,
+};
 
-    pub fn init() CalcState {
+pub const CalcState = struct {
+    allocator: std.mem.Allocator,
+    prev_input: InputValue,
+    operation: u8,
+    input: InputValue,
+
+    pub fn init(allocator: std.mem.Allocator) CalcState {
         return CalcState{
-            .prev_input = 0,
+            .allocator = allocator,
+            .prev_input = InputValue{
+                .value = .empty,
+                .has_period = false,
+            },
             .operation = '~',
-            .input = 0,
-            .is_period_input = false,
-            .has_period = false,
+            .input = InputValue{
+                .value = .empty,
+                .has_period = false,
+            },
         };
     }
     pub fn reset(self: *CalcState) void {
-        self.input = 0;
+        self.input.value = .empty;
+        self.input.has_period = false;
         self.operation = '~';
-        self.prev_input = 0;
-        self.is_period_input = false;
+        self.prev_input.value = .empty;
+        self.prev_input.has_period = false;
     }
-    pub fn updateInput(self: *CalcState, _input: f128) void {
-        self.input = _input;
-        self.is_period_input = false;
-        self.has_period = getFractionCount(_input, FRACTION_COUNT) > 0;
+    pub fn appendInput(self: *CalcState, _input: u8) void {
+        if ((self.input.value.items.len == 128) or
+            (_input == '.' and self.input.has_period)) return;
+        self.input.value.append(self.allocator, _input) catch unreachable;
+        if (_input == '.')
+            self.input.has_period = true;
     }
-    pub fn setPoint(self: *CalcState) void {
-        if (!self.has_period)
-            self.is_period_input = true;
-        self.has_period = true;
+    pub fn popLastInput(self: *CalcState) void {
+        if (self.input.value.items.len == 0) return;
+        _ = self.input.value.pop();
+        self.input.has_period = helpers.check_has_period(self.input.value.items);
     }
     pub fn updateOpetation(self: *CalcState, _opeation: u8) void {
-        self.prev_input = self.input;
-        self.input = 0;
+        self.prev_input.value = .empty;
+        self.prev_input.value.appendSlice(self.allocator, self.input.value.items) catch unreachable;
+        self.prev_input.has_period = self.input.has_period;
+        self.input.value = .empty;
+        self.input.has_period = false;
         self.operation = _opeation;
-        self.is_period_input = false;
-        self.has_period = false;
     }
     pub fn calculate(self: *CalcState) void {
+        if (self.operation == '~') return;
+
         var buffer: [128]u8 = undefined;
+        const input = std.fmt.parseFloat(f128, self.input.value.items) catch 0;
+        const prev_input = std.fmt.parseFloat(f128, self.prev_input.value.items) catch 0;
+        var result: []const u8 = undefined;
         switch (self.operation) {
             '+' => {
-                const result = self.input + self.prev_input;
-                self.has_period = getFractionCount(result, FRACTION_COUNT) > 0;
-                self.input = std.fmt.parseFloat(
-                    f128,
-                    fixDecimal(&buffer, result, FRACTION_COUNT),
-                ) catch unreachable;
+                result = fixDecimal(&buffer, input + prev_input, FRACTION_COUNT);
             },
             '-' => {
-                const result = self.prev_input - self.input;
-                self.has_period = getFractionCount(result, FRACTION_COUNT) > 0;
-                self.input = std.fmt.parseFloat(
-                    f128,
-                    fixDecimal(&buffer, result, FRACTION_COUNT),
-                ) catch unreachable;
+                result = fixDecimal(&buffer, prev_input - input, FRACTION_COUNT);
             },
             'x' => {
-                const result = self.input * self.prev_input;
-                self.has_period = getFractionCount(result, FRACTION_COUNT) > 0;
-                self.input = std.fmt.parseFloat(
-                    f128,
-                    fixDecimal(&buffer, result, FRACTION_COUNT),
-                ) catch unreachable;
+                result = fixDecimal(&buffer, input * prev_input, FRACTION_COUNT);
             },
             '/' => {
-                const result = self.prev_input / self.input;
-                self.has_period = getFractionCount(result, FRACTION_COUNT) > 0;
-                self.input = std.fmt.parseFloat(
-                    f128,
-                    fixDecimal(&buffer, result, FRACTION_COUNT),
-                ) catch unreachable;
+                result = fixDecimal(&buffer, prev_input / input, FRACTION_COUNT);
             },
             else => {},
         }
+        self.input.value = .empty;
+        self.input.value.appendSlice(self.allocator, result) catch unreachable;
+        self.input.has_period = helpers.check_has_period(self.input.value.items);
         self.operation = '~';
     }
 };

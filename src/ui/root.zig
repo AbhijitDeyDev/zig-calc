@@ -7,16 +7,19 @@ const CalcState = structures.CalcState;
 const MouseClickData = structures.MouseClickData;
 const helpers = @import("../common/helpers.zig");
 
+const numbers = [10]u8{ '9', '8', '7', '6', '5', '4', '3', '2', '1', '0' };
+const symbols = [7]u8{ '+', '-', 'x', '/', '=', '.', '«' };
+
 pub fn draw(renderer: *SDL.Renderer, calc_state: *CalcState, mouse_click_data: *MouseClickData) !void {
     // Rendering number buttons
     var y_index: usize = 1;
-    for (0..10) |i| {
+    for (numbers, 0..) |number, i| {
         var buf: [@sizeOf(usize)]u8 = undefined;
         const x = (150 * @as(c_int, @intCast((i + 2) % 2)) + 50);
         const y = 50 * @as(c_int, @intCast(y_index));
         try button(
             renderer,
-            try std.fmt.bufPrint(&buf, "{}", .{i}),
+            try std.fmt.bufPrint(&buf, "{c}", .{number}),
             .{
                 .x = x,
                 .y = y,
@@ -32,14 +35,13 @@ pub fn draw(renderer: *SDL.Renderer, calc_state: *CalcState, mouse_click_data: *
             mouse_click_data.x >= x and mouse_click_data.x <= x + 140 and
             mouse_click_data.y >= y and mouse_click_data.y <= y + 40)
         {
-            calc_state.updateInput(helpers.appendDigit(calc_state.input, i, calc_state.is_period_input));
+            calc_state.appendInput(number);
         }
     }
 
     // Rendering symbols
-    const symbols = [7]u8{ '+', '-', 'x', '/', '=', '.', '«' };
     y_index = 1;
-    for (0.., symbols) |i, symbol| {
+    for (symbols, 0..) |symbol, i| {
         var buf: [1]u8 = undefined;
         const x = @as(c_int, @intCast(400 + ((i % 2) * 120)));
         const y = 50 * @as(c_int, @intCast(y_index));
@@ -64,9 +66,9 @@ pub fn draw(renderer: *SDL.Renderer, calc_state: *CalcState, mouse_click_data: *
             if (symbol == '=') {
                 calc_state.calculate();
             } else if (symbol == '«') {
-                calc_state.updateInput(helpers.popLastDigit(calc_state.input));
+                calc_state.popLastInput();
             } else if (symbol == '.') {
-                calc_state.setPoint();
+                calc_state.appendInput('.');
             } else {
                 calc_state.updateOpetation(symbol);
             }
@@ -75,14 +77,9 @@ pub fn draw(renderer: *SDL.Renderer, calc_state: *CalcState, mouse_click_data: *
 
     // Render text boxes
     // Result box
-    var buffer: [128]u8 = undefined;
-    var print_buffer: [128]u8 = undefined;
     text_box(
         renderer,
-        try std.fmt.bufPrint(&print_buffer, "{s}{s}", .{
-            helpers.fixDecimal(&buffer, calc_state.input, 14),
-            if (calc_state.is_period_input) "." else "",
-        }),
+        if (calc_state.input.value.items.len > 0) calc_state.input.value.items else " ",
         .{
             .label_size = 40,
             .x = 50,

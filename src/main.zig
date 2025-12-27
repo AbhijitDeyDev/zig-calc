@@ -41,7 +41,10 @@ pub fn main() !void {
     );
     defer renderer.destroy();
 
-    var calc_state = CalcState.init();
+    const page_allocator = std.heap.page_allocator;
+    var arenaAllocator = std.heap.ArenaAllocator.init(page_allocator);
+    defer arenaAllocator.deinit();
+    var calc_state = CalcState.init(arenaAllocator.allocator());
 
     mainLoop: while (true) {
         var mouse_click_data = MouseClickData.init();
@@ -58,39 +61,39 @@ pub fn main() !void {
                 .key_down => {
                     switch (ev.key_down.keycode) {
                         .@"0", .keypad_0 => {
-                            calc_state.updateInput(appendDigit(calc_state.input, 0, calc_state.is_period_input));
+                            calc_state.appendInput('0');
                         },
                         .@"1", .keypad_1 => {
-                            calc_state.updateInput(appendDigit(calc_state.input, 1, calc_state.is_period_input));
+                            calc_state.appendInput('1');
                         },
                         .@"2", .keypad_2 => {
-                            calc_state.updateInput(appendDigit(calc_state.input, 2, calc_state.is_period_input));
+                            calc_state.appendInput('2');
                         },
                         .@"3", .keypad_3 => {
-                            calc_state.updateInput(appendDigit(calc_state.input, 3, calc_state.is_period_input));
+                            calc_state.appendInput('3');
                         },
                         .@"4", .keypad_4 => {
-                            calc_state.updateInput(appendDigit(calc_state.input, 4, calc_state.is_period_input));
+                            calc_state.appendInput('4');
                         },
                         .@"5", .keypad_5 => {
-                            calc_state.updateInput(appendDigit(calc_state.input, 5, calc_state.is_period_input));
+                            calc_state.appendInput('5');
                         },
                         .@"6", .keypad_6 => {
-                            calc_state.updateInput(appendDigit(calc_state.input, 6, calc_state.is_period_input));
+                            calc_state.appendInput('6');
                         },
                         .@"7", .keypad_7 => {
-                            calc_state.updateInput(appendDigit(calc_state.input, 7, calc_state.is_period_input));
+                            calc_state.appendInput('7');
                         },
                         .@"8", .keypad_8 => {
                             // Handle asterisk for 'x' input
                             if (ev.key_down.keycode == .@"8" and ev.key_down.modifiers.storage == 1) {
                                 calc_state.updateOpetation('x');
                             } else {
-                                calc_state.updateInput(appendDigit(calc_state.input, 8, calc_state.is_period_input));
+                                calc_state.appendInput('8');
                             }
                         },
                         .@"9", .keypad_9 => {
-                            calc_state.updateInput(appendDigit(calc_state.input, 9, calc_state.is_period_input));
+                            calc_state.appendInput('9');
                         },
                         .equals, .keypad_plus => {
                             // Handle Shift+'=' for '+' input
@@ -112,10 +115,10 @@ pub fn main() !void {
                             calc_state.calculate();
                         },
                         .period, .keypad_period => {
-                            calc_state.setPoint();
+                            calc_state.appendInput('.');
                         },
                         .backspace => {
-                            calc_state.updateInput(helpers.popLastDigit(calc_state.input));
+                            calc_state.popLastInput();
                         },
                         else => {},
                     }
