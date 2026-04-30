@@ -5,8 +5,8 @@
     .minimum_zig_version = "0.15.0",
     .dependencies = .{
         .sdl = .{
-            .url = "https://github.com/der-teufel-programming/SDL.zig/archive/fix-error-msg.tar.gz",
-            .hash = "SDL2-0.0.0-yMCQivWqBABTfB8opAADsLCGxxu20vijLBW2hHdpTR-L",
+            .url = "https://github.com/leecannon/SDL.zig/archive/master.tar.gz",
+            .hash = "SDL2-0.0.0-yMCQivytBACtTqafYGW-KVlztH3DZB6eU662Hdkd03m7",
         },
     },
     .paths = .{
