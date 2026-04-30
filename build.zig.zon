@@ -2,7 +2,7 @@
     .name = .zig_calc,
     .version = "0.4.0",
     .fingerprint = 0x945bd14cb2a077bf,
-    .minimum_zig_version = "0.15.0",
+    .minimum_zig_version = "0.16.0",
     .dependencies = .{
         .sdl = .{
             .url = "https://github.com/leecannon/SDL.zig/archive/master.tar.gz",

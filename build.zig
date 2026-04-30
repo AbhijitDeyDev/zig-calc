@@ -25,7 +25,7 @@ pub fn build(b: *std.Build) void {
         b.installFile("SDL2/bin/SDL2.dll", "./bin/SDL2.dll");
         b.installFile("SDL2/bin/SDL2_ttf.dll", "./bin/SDL2_ttf.dll");
     }
-    b.installFile("src/fonts/CursedTimerUlil.ttf", "./bin/src/fonts/CursedTimerUlil.ttf");
+    b.installFile("src/fonts/CursedTimerUlil.ttf", "./bin/CursedTimerUlil.ttf");
 
     b.installArtifact(exe);
     const run_cmd = b.addRunArtifact(exe);

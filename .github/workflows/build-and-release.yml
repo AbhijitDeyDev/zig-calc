@@ -1,0 +1,190 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:  # Allow manual runs
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Zig
+        uses: mlugg/actions-setup-zig@v2
+        with:
+          version: '0.16.0'
+
+      - name: Download SDL2 for Windows (Mingw)
+        run: |
+          # Download SDL2 development package
+          $ProgressPreference = 'SilentlyContinue'
+          Invoke-WebRequest -Uri "https://github.com/libsdl-org/SDL/releases/download/release-2.32.8/SDL2-devel-2.32.8-mingw.zip" -OutFile "sdl2-mingw.zip"
+          Expand-Archive -Path "sdl2-mingw.zip" -DestinationPath "sdl2-temp" -Force
+
+          # Download SDL2_ttf development package
+          Invoke-WebRequest -Uri "https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.24.0/SDL2_ttf-devel-2.24.0-mingw.zip" -OutFile "sdl2-ttf-mingw.zip"
+          Expand-Archive -Path "sdl2-ttf-mingw.zip" -DestinationPath "sdl2-ttf-temp" -Force
+
+          # Create SDL2 directory structure
+          New-Item -ItemType Directory -Path "SDL2" -Force
+          New-Item -ItemType Directory -Path "SDL2/bin" -Force
+          New-Item -ItemType Directory -Path "SDL2/include" -Force
+          New-Item -ItemType Directory -Path "SDL2/lib" -Force
+
+          # Copy SDL2 files
+          Copy-Item -Path "sdl2-temp/x86_64-w64-mingw32/bin/SDL2.dll" -Destination "SDL2/bin/" -Force
+          Copy-Item -Recurse -Path "sdl2-temp/x86_64-w64-mingw32/include/*" -Destination "SDL2/include/" -Force
+          Copy-Item -Recurse -Path "sdl2-temp/x86_64-w64-mingw32/lib/*" -Destination "SDL2/lib/" -Force
+
+          # Copy SDL2_ttf files
+          Copy-Item -Path "sdl2-ttf-temp/x86_64-w64-mingw32/bin/SDL2_ttf.dll" -Destination "SDL2/bin/" -Force
+          Copy-Item -Recurse -Path "sdl2-ttf-temp/x86_64-w64-mingw32/include/*" -Destination "SDL2/include/" -Force
+          Copy-Item -Recurse -Path "sdl2-ttf-temp/x86_64-w64-mingw32/lib/*" -Destination "SDL2/lib/" -Force
+
+          # Clean up
+          Remove-Item -Recurse -Force "sdl2-temp", "sdl2-ttf-temp" -ErrorAction SilentlyContinue
+          Remove-Item -Force "sdl2-mingw.zip", "sdl2-ttf-mingw.zip" -ErrorAction SilentlyContinue
+
+      - name: Build for Windows x86_64
+        run: |
+          zig build -Doptimize=ReleaseSafe
+
+      - name: Create Windows distribution package
+        run: |
+          New-Item -ItemType Directory -Path "dist" -Force
+          Copy-Item -Path "zig-out\bin\zig_calc.exe" -Destination "dist\zig-calc-windows-x86_64.exe" -Force
+          Copy-Item -Path "SDL2\bin\SDL2.dll" -Destination "dist\" -Force
+          Copy-Item -Path "SDL2\bin\SDL2_ttf.dll" -Destination "dist\" -Force
+          Copy-Item -Path "src\fonts\CursedTimerUlil.ttf" -Destination "dist\src\fonts\CursedTimerUlil.ttf" -Force
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zig-calc-windows-x86_64
+          path: dist/
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Zig
+        uses: mlugg/actions-setup-zig@v2
+        with:
+          version: '0.16.0'
+
+      - name: Install SDL2 dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsdl2-dev libsdl2-ttf-dev
+
+      - name: Build for Linux x86_64
+        run: |
+          zig build -Dtarget=x86_64-linux-gnu -Doptimize=ReleaseSafe
+
+      - name: Create Linux distribution package
+        run: |
+          mkdir -p dist
+          cp zig-out/bin/zig_calc dist/zig-calc-linux-x86_64
+          strip dist/zig-calc-linux-x86_64
+          cp src/fonts/CursedTimerUlil.ttf dist/src/fonts/CursedTimerUlil.ttf
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zig-calc-linux-x86_64
+          path: dist/
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Zig
+        uses: mlugg/actions-setup-zig@v2
+        with:
+          version: '0.16.0'
+
+      - name: Install SDL2 dependencies
+        run: |
+          brew install sdl2 sdl2_ttf
+
+      - name: Build for macOS x86_64
+        run: |
+          zig build -Dtarget=x86_64-macos -Doptimize=ReleaseSafe
+          mkdir -p dist-x86_64
+          cp zig-out/bin/zig_calc dist-x86_64/zig-calc-macos-x86_64
+          strip dist-x86_64/zig-calc-macos-x86_64
+
+      - name: Build for macOS arm64
+        run: |
+          zig build -Dtarget=aarch64-macos -Doptimize=ReleaseSafe
+          mkdir -p dist-arm64
+          cp zig-out/bin/zig_calc dist-arm64/zig-calc-macos-arm64
+          strip dist-arm64/zig-calc-macos-arm64
+
+      - name: Create universal binary
+        run: |
+          mkdir -p dist
+          lipo -create -output dist/zig-calc-macos-universal dist-x86_64/zig-calc-macos-x86_64 dist-arm64/zig-calc-macos-arm64
+          cp src/fonts/CursedTimerUlil.ttf dist/src/fonts/CursedTimerUlil.ttf
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: zig-calc-macos-universal
+          path: dist/
+
+  create-release:
+    needs: [build-windows, build-linux, build-macos]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+
+          # Windows
+          mkdir -p release-assets/windows
+          cp -r artifacts/zig-calc-windows-x86_64/* release-assets/windows/
+          cd release-assets/windows && zip -r ../zig-calc-windows-x86_64.zip .
+          cd ../..
+
+          # Linux
+          mkdir -p release-assets/linux
+          cp artifacts/zig-calc-linux-x86_64/zig-calc-linux-x86_64 release-assets/linux/
+          cp artifacts/zig-calc-linux-x86_64/CursedTimerUlil.ttf release-assets/linux/src/fonts/CursedTimerUlil.ttf
+          cd release-assets/linux && tar -czvf ../zig-calc-linux-x86_64.tar.gz *
+          cd ../..
+
+          # macOS
+          mkdir -p release-assets/macos
+          cp artifacts/zig-calc-macos-universal/zig-calc-macos-universal release-assets/macos/
+          cp artifacts/zig-calc-macos-universal/CursedTimerUlil.ttf release-assets/macos/src/fonts/CursedTimerUlil.ttf
+          cd release-assets/macos && tar -czvf ../zig-calc-macos-universal.tar.gz *
+          cd ../..
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release-assets/zig-calc-windows-x86_64.zip
+            release-assets/zig-calc-linux-x86_64.tar.gz
+            release-assets/zig-calc-macos-universal.tar.gz
+          draft: false
+          prerelease: false
+          generate_release_notes: true

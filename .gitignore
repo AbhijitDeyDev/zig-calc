@@ -2,3 +2,4 @@
 zig-out
 SDL2
 zig-pkg
+test-dist
