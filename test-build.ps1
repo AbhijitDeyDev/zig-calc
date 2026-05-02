@@ -21,14 +21,14 @@ New-Item -ItemType Directory -Path "SDL2/include" -Force
 New-Item -ItemType Directory -Path "SDL2/lib" -Force
 
 # Copy SDL2 files
-Copy-Item -Path "sdl2-temp/x86_64-w64-mingw32/bin/SDL2.dll" -Destination "SDL2/bin/" -Force
-Copy-Item -Recurse -Path "sdl2-temp/x86_64-w64-mingw32/include/*" -Destination "SDL2/include/" -Force
-Copy-Item -Recurse -Path "sdl2-temp/x86_64-w64-mingw32/lib/*" -Destination "SDL2/lib/" -Force
+Copy-Item -Path "sdl2-temp/SDL2-2.32.8/x86_64-w64-mingw32/bin/SDL2.dll" -Destination "SDL2/bin/" -Force
+Copy-Item -Recurse -Path "sdl2-temp/SDL2-2.32.8/x86_64-w64-mingw32/include/*" -Destination "SDL2/include/" -Force
+Copy-Item -Recurse -Path "sdl2-temp/SDL2-2.32.8/x86_64-w64-mingw32/lib/*" -Destination "SDL2/lib/" -Force
 
 # Copy SDL2_ttf files
-Copy-Item -Path "sdl2-ttf-temp/x86_64-w64-mingw32/bin/SDL2_ttf.dll" -Destination "SDL2/bin/" -Force
-Copy-Item -Recurse -Path "sdl2-ttf-temp/x86_64-w64-mingw32/include/*" -Destination "SDL2/include/" -Force
-Copy-Item -Recurse -Path "sdl2-ttf-temp/x86_64-w64-mingw32/lib/*" -Destination "SDL2/lib/" -Force
+Copy-Item -Path "sdl2-ttf-temp/SDL2_ttf-2.24.0/x86_64-w64-mingw32/bin/SDL2_ttf.dll" -Destination "SDL2/bin/" -Force
+Copy-Item -Recurse -Path "sdl2-ttf-temp/SDL2_ttf-2.24.0/x86_64-w64-mingw32/include/*" -Destination "SDL2/include/" -Force
+Copy-Item -Recurse -Path "sdl2-ttf-temp/SDL2_ttf-2.24.0/x86_64-w64-mingw32/lib/*" -Destination "SDL2/lib/" -Force
 
 # Clean up
 Remove-Item -Recurse -Force "sdl2-temp", "sdl2-ttf-temp" -ErrorAction SilentlyContinue
@@ -59,6 +59,7 @@ if ($LASTEXITCODE -eq 0) {
         Copy-Item -Path "zig-out\bin\zig_calc.exe" -Destination "test-dist\zig-calc.exe" -Force
         Copy-Item -Path "SDL2\bin\SDL2.dll" -Destination "test-dist\" -Force
         Copy-Item -Path "SDL2\bin\SDL2_ttf.dll" -Destination "test-dist\" -Force
+        New-Item -ItemType Directory -Path "test-dist\src\fonts" -Force
         Copy-Item -Path "src\fonts\CursedTimerUlil.ttf" -Destination "test-dist\src\fonts\CursedTimerUlil.ttf" -Force
 
         Write-Host "Test distribution created in test-dist folder"

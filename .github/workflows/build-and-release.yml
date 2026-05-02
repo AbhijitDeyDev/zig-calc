@@ -38,14 +38,14 @@ jobs:
           New-Item -ItemType Directory -Path "SDL2/lib" -Force
 
           # Copy SDL2 files
-          Copy-Item -Path "sdl2-temp/x86_64-w64-mingw32/bin/SDL2.dll" -Destination "SDL2/bin/" -Force
-          Copy-Item -Recurse -Path "sdl2-temp/x86_64-w64-mingw32/include/*" -Destination "SDL2/include/" -Force
-          Copy-Item -Recurse -Path "sdl2-temp/x86_64-w64-mingw32/lib/*" -Destination "SDL2/lib/" -Force
+          Copy-Item -Path "sdl2-temp/SDL2-2.32.8/x86_64-w64-mingw32/bin/SDL2.dll" -Destination "SDL2/bin/" -Force
+          Copy-Item -Recurse -Path "sdl2-temp/SDL2-2.32.8/x86_64-w64-mingw32/include/*" -Destination "SDL2/include/" -Force
+          Copy-Item -Recurse -Path "sdl2-temp/SDL2-2.32.8/x86_64-w64-mingw32/lib/*" -Destination "SDL2/lib/" -Force
 
           # Copy SDL2_ttf files
-          Copy-Item -Path "sdl2-ttf-temp/x86_64-w64-mingw32/bin/SDL2_ttf.dll" -Destination "SDL2/bin/" -Force
-          Copy-Item -Recurse -Path "sdl2-ttf-temp/x86_64-w64-mingw32/include/*" -Destination "SDL2/include/" -Force
-          Copy-Item -Recurse -Path "sdl2-ttf-temp/x86_64-w64-mingw32/lib/*" -Destination "SDL2/lib/" -Force
+          Copy-Item -Path "sdl2-ttf-temp/SDL2_ttf-2.24.0/x86_64-w64-mingw32/bin/SDL2_ttf.dll" -Destination "SDL2/bin/" -Force
+          Copy-Item -Recurse -Path "sdl2-ttf-temp/SDL2_ttf-2.24.0/x86_64-w64-mingw32/include/*" -Destination "SDL2/include/" -Force
+          Copy-Item -Recurse -Path "sdl2-ttf-temp/SDL2_ttf-2.24.0/x86_64-w64-mingw32/lib/*" -Destination "SDL2/lib/" -Force
 
           # Clean up
           Remove-Item -Recurse -Force "sdl2-temp", "sdl2-ttf-temp" -ErrorAction SilentlyContinue
@@ -61,6 +61,7 @@ jobs:
           Copy-Item -Path "zig-out\bin\zig_calc.exe" -Destination "dist\zig-calc-windows-x86_64.exe" -Force
           Copy-Item -Path "SDL2\bin\SDL2.dll" -Destination "dist\" -Force
           Copy-Item -Path "SDL2\bin\SDL2_ttf.dll" -Destination "dist\" -Force
+          New-Item -ItemType Directory -Path "dist\src\fonts" -Force
           Copy-Item -Path "src\fonts\CursedTimerUlil.ttf" -Destination "dist\src\fonts\CursedTimerUlil.ttf" -Force
 
       - name: Upload Windows artifact
@@ -87,7 +88,7 @@ jobs:
 
       - name: Build for Linux x86_64
         run: |
-          zig build -Dtarget=x86_64-linux-gnu -Doptimize=ReleaseSafe
+          zig build -Doptimize=ReleaseSafe
 
       - name: Create Linux distribution package
         run: |
@@ -119,14 +120,15 @@ jobs:
 
       - name: Build for macOS x86_64
         run: |
-          zig build -Dtarget=x86_64-macos -Doptimize=ReleaseSafe
+          zig build -Doptimize=ReleaseSafe
           mkdir -p dist-x86_64
           cp zig-out/bin/zig_calc dist-x86_64/zig-calc-macos-x86_64
           strip dist-x86_64/zig-calc-macos-x86_64
 
       - name: Build for macOS arm64
         run: |
-          zig build -Dtarget=aarch64-macos -Doptimize=ReleaseSafe
+          # Build for Apple Silicon natively
+          zig build -Doptimize=ReleaseSafe
           mkdir -p dist-arm64
           cp zig-out/bin/zig_calc dist-arm64/zig-calc-macos-arm64
           strip dist-arm64/zig-calc-macos-arm64
