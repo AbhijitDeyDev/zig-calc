@@ -7,6 +7,8 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:  # Allow manual runs
+permissions:
+  contents: write
 
 jobs:
   build-windows:
@@ -181,8 +183,9 @@ jobs:
           # cd ../..
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
+          tag_name: "${{ github.run_number }}"
           files: |
             release-assets/zig-calc-windows-x86_64.zip
             release-assets/zig-calc-linux-x86_64.tar.gz
