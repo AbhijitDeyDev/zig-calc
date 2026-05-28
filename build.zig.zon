@@ -5,8 +5,8 @@
     .minimum_zig_version = "0.16.0",
     .dependencies = .{
         .sdl = .{
-            .url = "https://github.com/leecannon/SDL.zig/archive/master.tar.gz",
-            .hash = "SDL2-0.0.0-yMCQivytBACtTqafYGW-KVlztH3DZB6eU662Hdkd03m7",
+            .url = "https://github.com/AbhijitDeyDev/SDL.zig/archive/master.tar.gz",
+            .hash = "SDL2-0.0.0-yMCQiuWvBACwRGdt5c8GL5Va5e2lwpk8EMlGK3h1ssHa",
         },
     },
     .paths = .{
