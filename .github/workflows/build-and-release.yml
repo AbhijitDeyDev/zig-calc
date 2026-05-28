@@ -167,14 +167,14 @@ jobs:
           cd ../..
 
           # Linux
-          mkdir -p release-assets/linux
+          mkdir -p release-assets/linux/src/fonts
           cp artifacts/zig-calc-linux-x86_64/zig-calc-linux-x86_64 release-assets/linux/
           cp artifacts/zig-calc-linux-x86_64/src/fonts/CursedTimerUlil.ttf release-assets/linux/src/fonts/CursedTimerUlil.ttf
           cd release-assets/linux && tar -czvf ../zig-calc-linux-x86_64.tar.gz *
           cd ../..
 
           # macOS
-          # mkdir -p release-assets/macos
+          # mkdir -p release-assets/macos/src/fonts
           # cp artifacts/zig-calc-macos-universal/zig-calc-macos-universal release-assets/macos/
           # cp artifacts/zig-calc-macos-universal/src/fonts/CursedTimerUlil.ttf release-assets/macos/src/fonts/CursedTimerUlil.ttf
           # cd release-assets/macos && tar -czvf ../zig-calc-macos-universal.tar.gz *
