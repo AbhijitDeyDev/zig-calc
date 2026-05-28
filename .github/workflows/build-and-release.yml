@@ -148,7 +148,10 @@ jobs:
   create-release:
     needs: [build-windows, build-linux, build-macos]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: |
+      always() && 
+      startsWith(github.ref, 'refs/tags/v') &&
+      (needs.build-windows.result == 'success' || needs.build-linux.result == 'success' || needs.build-macos.result == 'success')
 
     steps:
       - name: Download all artifacts
@@ -160,25 +163,31 @@ jobs:
         run: |
           mkdir -p release-assets
 
-          # Windows
-          mkdir -p release-assets/windows
-          cp -r artifacts/zig-calc-windows-x86_64/* release-assets/windows/
-          cd release-assets/windows && zip -r ../zig-calc-windows-x86_64.zip .
-          cd ../..
+          # Windows (Only runs if the folder exists)
+          if [ -d "artifacts/zig-calc-windows-x86_64" ]; then
+            mkdir -p release-assets/windows
+            cp -r artifacts/zig-calc-windows-x86_64/* release-assets/windows/
+            cd release-assets/windows && zip -r ../zig-calc-windows-x86_64.zip .
+            cd ../..
+          fi
 
-          # Linux
-          mkdir -p release-assets/linux
-          cp artifacts/zig-calc-linux-x86_64/zig-calc-linux-x86_64 release-assets/linux/
-          cp artifacts/zig-calc-linux-x86_64/CursedTimerUlil.ttf release-assets/linux/src/fonts/CursedTimerUlil.ttf
-          cd release-assets/linux && tar -czvf ../zig-calc-linux-x86_64.tar.gz *
-          cd ../..
+          # Linux (Only runs if the folder exists)
+          if [ -d "artifacts/zig-calc-linux-x86_64" ]; then
+            mkdir -p release-assets/linux
+            cp artifacts/zig-calc-linux-x86_64/zig-calc-linux-x86_64 release-assets/linux/
+            cp artifacts/zig-calc-linux-x86_64/CursedTimerUlil.ttf release-assets/linux/src/fonts/CursedTimerUlil.ttf
+            cd release-assets/linux && tar -czvf ../zig-calc-linux-x86_64.tar.gz *
+            cd ../..
+          fi
 
-          # macOS
-          mkdir -p release-assets/macos
-          cp artifacts/zig-calc-macos-universal/zig-calc-macos-universal release-assets/macos/
-          cp artifacts/zig-calc-macos-universal/CursedTimerUlil.ttf release-assets/macos/src/fonts/CursedTimerUlil.ttf
-          cd release-assets/macos && tar -czvf ../zig-calc-macos-universal.tar.gz *
-          cd ../..
+          # macOS (Only runs if the folder exists)
+          if [ -d "artifacts/zig-calc-macos-universal" ]; then
+            mkdir -p release-assets/macos
+            cp artifacts/zig-calc-macos-universal/zig-calc-macos-universal release-assets/macos/
+            cp artifacts/zig-calc-macos-universal/CursedTimerUlil.ttf release-assets/macos/src/fonts/CursedTimerUlil.ttf
+            cd release-assets/macos && tar -czvf ../zig-calc-macos-universal.tar.gz *
+            cd ../..
+          fi
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
