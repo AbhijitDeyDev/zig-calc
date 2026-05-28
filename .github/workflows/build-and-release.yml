@@ -95,6 +95,7 @@ jobs:
           mkdir -p dist
           cp zig-out/bin/zig_calc dist/zig-calc-linux-x86_64
           strip dist/zig-calc-linux-x86_64
+          mkdir dist/src/fonts
           cp src/fonts/CursedTimerUlil.ttf dist/src/fonts/CursedTimerUlil.ttf
 
       - name: Upload Linux artifact
@@ -137,6 +138,7 @@ jobs:
         run: |
           mkdir -p dist
           lipo -create -output dist/zig-calc-macos-universal dist-x86_64/zig-calc-macos-x86_64 dist-arm64/zig-calc-macos-arm64
+          mkdir dist/src/fonts
           cp src/fonts/CursedTimerUlil.ttf dist/src/fonts/CursedTimerUlil.ttf
 
       - name: Upload macOS artifacts
@@ -149,7 +151,7 @@ jobs:
     needs: [build-windows, build-linux, build-macos]
     runs-on: ubuntu-latest
     if: |
-      always() && 
+      always() &&
       startsWith(github.ref, 'refs/tags/v') &&
       (needs.build-windows.result == 'success' || needs.build-linux.result == 'success' || needs.build-macos.result == 'success')
 
